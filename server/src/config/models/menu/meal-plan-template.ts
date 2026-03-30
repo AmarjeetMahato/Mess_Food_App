@@ -5,6 +5,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { mealSlotEnum } from './daily-menu';
 import { MenuItem } from './menu-item';
+import { User } from '../user_and_auth';
 
 // ─── Table ────────────────────────────────────────────────────────────────────
 // Default rotating 3-day plan template
@@ -36,6 +37,11 @@ export const MealPlanTemplate = pgTable(
       .notNull(),
     // deactivate a template entry without deleting it
 
+    created_by: uuid('created_by')
+          .references(() => User.id, { onDelete: 'set null' }),
+        // which admin created this daily menu entry
+    
+
     created_at: timestamp('created_at', { mode: 'date' })
       .defaultNow()
       .notNull(),
@@ -63,6 +69,10 @@ export const MealPlanTemplate = pgTable(
 // ─── Relations ────────────────────────────────────────────────────────────────
 
 export const mealPlanTemplateRelations = relations(MealPlanTemplate, ({ one }) => ({
+    createdBy:        one(User, {
+      fields:     [MealPlanTemplate.created_by],
+      references: [User.id],
+    }),
   menuItem: one(MenuItem, {
     fields:     [MealPlanTemplate.menu_item_id],
     references: [MenuItem.id],

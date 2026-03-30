@@ -1,6 +1,6 @@
 export * from "./Device"
 export * from "./OTP_Token"
-export * from "./OauthToken"
+export * from "./OauthAccount"
 export * from "./Role"
 export * from "./Sessions"
 export * from "./User"

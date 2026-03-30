@@ -34,6 +34,10 @@ export const MenuItemMapping = pgTable(
     created_at: timestamp('created_at', { mode: 'date' })
       .defaultNow()
       .notNull(),
+
+    updated_at: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull(),  
   },
   (table) => [
     index('mapping_daily_menu_idx').on(table.daily_menu_id),
