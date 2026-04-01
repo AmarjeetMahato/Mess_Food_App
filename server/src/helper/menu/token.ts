@@ -1,5 +1,3 @@
-import { MenuItemRepository } from "@/domain/menu/menu-item/repository/Menu_Item.Repository";
-import { MenuItemService } from "@/domain/menu/menu-item/services/Menu_Item.Service";
 
 
 export const TOKENS = {
@@ -25,4 +23,9 @@ export const TOKENS = {
      MenuItemMappingRepository: Symbol("MenuItemMappingRepository"),
      MenuItemMappingService: Symbol("MenuItemMappingService"),
      MenuItemMappingController: Symbol("MenuItemMappingController"),
+
+    //  Feedbacks
+        FeedbackRepository: Symbol("FeedbackRepository"),
+        FeedbackService: Symbol("FeedbackService"),
+        FeedbackController: Symbol("FeedbackController"),
 }

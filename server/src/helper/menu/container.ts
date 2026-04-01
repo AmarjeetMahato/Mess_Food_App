@@ -13,6 +13,9 @@ import { MealPlanTemplateController } from "@/domain/menu/meal-plan-template/con
 import { MenuItemMappingRepository } from "@/domain/menu/menu-item-mapping/repository/menuItemMappingRepository";
 import { MenuItemMappingController } from "@/domain/menu/menu-item-mapping/controllers/menu-item-mapping.Controller";
 import { MenuItemMappingService } from "@/domain/menu/menu-item-mapping/services/menuItemMappingService";
+import { FeedbackController } from "@/domain/menu/feedbacks/controllers/feedbackController";
+import { FeedbackRepository } from "@/domain/menu/feedbacks/repository/feedbackRepository";
+import { FeedbackService } from "@/domain/menu/feedbacks/service/feedbackService";
 
 
 
@@ -49,3 +52,9 @@ transient(TOKENS.MealPlanTemplateController, MealPlanTemplateController);
 singleton(TOKENS.MenuItemMappingRepository, MenuItemMappingRepository);
 singleton(TOKENS.MenuItemMappingService, MenuItemMappingService);
 transient(TOKENS.MenuItemMappingController, MenuItemMappingController);
+
+// ================= FEEDBACKS =================
+singleton(TOKENS.FeedbackRepository, FeedbackRepository);
+singleton(TOKENS.FeedbackService, FeedbackService);
+transient(TOKENS.FeedbackController, FeedbackController);
+

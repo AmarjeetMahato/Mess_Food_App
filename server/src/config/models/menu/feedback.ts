@@ -43,6 +43,10 @@ export const Feedback = pgTable(
     created_at: timestamp('created_at', { mode: 'date' })
       .defaultNow()
       .notNull(),
+
+    updated_at: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     index('feedback_user_idx').on(table.user_id),
