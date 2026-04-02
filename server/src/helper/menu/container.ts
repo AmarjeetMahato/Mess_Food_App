@@ -28,10 +28,7 @@ const transient = (token: symbol, useClass: any) => {
   container.register(token, { useClass });
 };
 
-// ==========================================
-// 1. Database Connection (Static Value)
-// ==========================================
-container.register<DrizzleDb>(TOKENS.DB, { useValue: db });
+
 
 // ================= MENUITEM =================
 singleton(TOKENS.MenuItemRepository, MenuItemRepository);

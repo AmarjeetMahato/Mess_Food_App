@@ -29,75 +29,50 @@ export const subscriptionStatusEnum = pgEnum('subscription_status', [
 export const Subscription = pgTable(
   'subscriptions',
   {
-    id: uuid('id')
-      .defaultRandom()
-      .primaryKey(),
+    id: uuid('id').defaultRandom().primaryKey(),
 
-    user_id: uuid('user_id')
-      .references(() => User.id, { onDelete: 'cascade' })
-      .notNull(),
+    user_id: uuid('user_id').references(() => User.id, { onDelete: 'cascade' }).notNull(),
 
-    plan_type: planTypeEnum('plan_type')
-      .notNull(),
+    plan_type: planTypeEnum('plan_type').notNull(),
     // daily | weekly | monthly
 
-    status: subscriptionStatusEnum('status')
-      .default('active')
-      .notNull(),
+    status: subscriptionStatusEnum('status').default('active').notNull(),
     // active | paused | expired | cancelled
 
-    start_date: date('start_date', { mode: 'date' })
-      .notNull(),
+    start_date: date('start_date', { mode: 'date' }).notNull(),
 
-    end_date: date('end_date', { mode: 'date' })
-      .notNull(),
+    end_date: date('end_date', { mode: 'date' }).notNull(),
     // extended automatically when subscription is paused
 
-    total_days: integer('total_days')
-      .notNull(),
+    total_days: integer('total_days').notNull(),
     // total days purchased — e.g. 30 for monthly
 
-    consumed_days: integer('consumed_days')
-      .default(0)
-      .notNull(),
+    consumed_days: integer('consumed_days').default(0).notNull(),
     // incremented each day user actually consumes a meal
 
-    remaining_days: integer('remaining_days')
-      .notNull(),
+    remaining_days: integer('remaining_days').notNull(),
     // stored column — updated on every consumption, skip, pause
     // faster for queries like "show remaining days" without computing
 
     // ── Meal slot flags ────────────────────────────────────────────────────
     // user subscribes to specific slots only
     // e.g. breakfast + dinner only, no lunch
-    has_breakfast: boolean('has_breakfast')
-      .default(false)
-      .notNull(),
+    has_breakfast: boolean('has_breakfast').default(false).notNull(),
 
-    has_lunch: boolean('has_lunch')
-      .default(false)
-      .notNull(),
+    has_lunch: boolean('has_lunch').default(false).notNull(),
 
-    has_dinner: boolean('has_dinner')
-      .default(false)
-      .notNull(),
+    has_dinner: boolean('has_dinner').default(false).notNull(),
 
-    has_snacks: boolean('has_snacks')
-      .default(false)
-      .notNull(),
+    has_snacks: boolean('has_snacks').default(false).notNull(),
 
-    auto_renew: boolean('auto_renew')
-      .default(false)
-      .notNull(),
+    auto_renew: boolean('auto_renew').default(false).notNull(),
     // if true — auto create new subscription when this one expires
 
-    created_at: timestamp('created_at', { mode: 'date' })
-      .defaultNow()
-      .notNull(),
+    created_at: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
 
-    updated_at: timestamp('updated_at', { mode: 'date' })
-      .defaultNow()
-      .notNull(),
+    updated_at: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+
+    
   },
   (table) => [
     index('subscription_user_idx').on(table.user_id),

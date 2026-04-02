@@ -53,9 +53,20 @@ export const MealAttendance = pgTable(
       .references(() => User.id, { onDelete: 'set null' }),
     // who performed the scan — delivery agent or mess staff (admin/user)
 
+        // ✅ NEW FIELDS
+    created_by: uuid('created_by')
+      .references(() => User.id, { onDelete: 'set null' }),
+
+    updated_by: uuid('updated_by')
+      .references(() => User.id, { onDelete: 'set null' }),
+
     created_at: timestamp('created_at', { mode: 'date' })
       .defaultNow()
       .notNull(),
+    
+      updated_at: timestamp('updated_at', {mode:'date'}).defaultNow().notNull()
+
+
   },
   (table) => [
     index('attendance_user_idx').on(table.user_id),
@@ -102,6 +113,17 @@ export const mealAttendanceRelations = relations(MealAttendance, ({ one }) => ({
     fields:     [MealAttendance.scanned_by],
     references: [User.id],
     relationName: 'scannedByUser',
+  }),
+    createdBy: one(User, {
+    fields: [MealAttendance.created_by],
+    references: [User.id],
+    relationName: 'mealAttendanceCreatedBy',
+  }),
+
+  updatedBy: one(User, {
+    fields: [MealAttendance.updated_by],
+    references: [User.id],
+    relationName: 'mealAttendanceUpdatedBy',
   }),
 }));
 
