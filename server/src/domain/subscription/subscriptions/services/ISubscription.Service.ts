@@ -5,7 +5,7 @@ export interface ISubscriptionService {
   // ─────────────────────────────────────────────
   // ✅ Create Subscription
   // ─────────────────────────────────────────────
-createSubscription(data: CreateSubscriptionDto): Promise<SubscriptionResponseDto>;
+createSubscription(data: CreateSubscriptionDto, userId:string): Promise<SubscriptionResponseDto>;
 
   // ─────────────────────────────────────────────
   // ✅ Update Subscription

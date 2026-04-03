@@ -9,7 +9,11 @@ export const TOKENS = {
     // Subscription
     SubscriptionRepository:Symbol("SubscriptionRepository"),
     SubscriptionController:Symbol("SubscriptionController"),
-    SubscriptionService:Symbol("SubscriptionService")
+    SubscriptionService:Symbol("SubscriptionService"),
+
+    SubscriptionPauseController:Symbol("SubscriptionPauseController"),
+    SubscriptionPauserRepository: Symbol("SubscriptionPauserRepository"),
+    SubscriptionPauseService: Symbol("SubscriptionPauseService")
 
 
 }

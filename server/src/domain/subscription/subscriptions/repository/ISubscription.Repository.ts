@@ -54,4 +54,12 @@ export interface ISubscriptionRepository {
 
   resumeSubscription(id:string): Promise<SubscriptionRow>;
 
+  // ─────────────────────────────────────────────
+  // 🔥 Cancel Subscription
+  // ─────────────────────────────────────────────
+  cancelSubscription(id: string): Promise<SubscriptionRow>;
+
+
+  getActiveById(id:string):Promise<SubscriptionRow | null>
+
 }

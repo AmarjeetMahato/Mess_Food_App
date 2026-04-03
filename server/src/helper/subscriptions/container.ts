@@ -6,6 +6,9 @@ import { MealAttendanceController } from "@/domain/subscription/meal-attendance/
 import { SubscriptionController } from "@/domain/subscription/subscriptions/controllers/Subscription.Controller";
 import { SubscriptionRepository } from "@/domain/subscription/subscriptions/repository/Subscription.Repository";
 import { SubscriptionService } from "@/domain/subscription/subscriptions/services/Subscritpion.Service";
+import { SubscriptionPauseController } from "@/domain/subscription/subscription-pause/controllers/Subscription_Pause.Controller";
+import { SubscriptionPauseService } from "@/domain/subscription/subscription-pause/services/Subscription_Pause.Service";
+import { SubscriptionPauserRepository } from "@/domain/subscription/subscription-pause/repository/Subscription_Pause.Repository";
 
 
 
@@ -27,5 +30,10 @@ transient(TOKENS.MealAttendanceController, MealAttendanceController)
 // ================= SUBSCRIPTION =================
 singleton(TOKENS.SubscriptionRepository,SubscriptionRepository),
 singleton(TOKENS.SubscriptionService,SubscriptionService),
-transient(TOKENS.SubscriptionController, SubscriptionController)
+transient(TOKENS.SubscriptionController, SubscriptionController);
+
+// ================= SUBSCRIPTION_PAUSE =================
+singleton(TOKENS.SubscriptionPauserRepository,SubscriptionPauserRepository);
+singleton(TOKENS.SubscriptionPauseService,SubscriptionPauseService);
+transient(TOKENS.SubscriptionPauseController, SubscriptionPauseController);
 

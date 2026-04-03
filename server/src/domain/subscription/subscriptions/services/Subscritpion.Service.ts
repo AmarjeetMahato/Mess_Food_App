@@ -13,7 +13,7 @@ export class SubscriptionService implements ISubscriptionService{
 
     constructor(@inject(TOKENS.SubscriptionRepository) private repository:ISubscriptionRepository){}
 
-    async createSubscription(data: CreateSubscriptionDto): Promise<SubscriptionResponseDto> {
+    async createSubscription(data: CreateSubscriptionDto, userId:string): Promise<SubscriptionResponseDto> {
               if(!data){
                   throw new BadRequestError("Invaild input fileds")
               }
@@ -42,15 +42,16 @@ export class SubscriptionService implements ISubscriptionService{
                   throw new BadRequestError("endDate must be greater than startDate");
                }
 
-  // ─────────────────────────────────────────────
-  // 🔥 Business Rule 4: At least one meal slot
-  // ─────────────────────────────────────────────
+              // ─────────────────────────────────────────────
+              // 🔥 Business Rule 4: At least one meal slot
+              // ─────────────────────────────────────────────
               if(!data.hasBreakfast && !data.hasLunch && !data.hasSnacks && !data.hasDinner){
                   throw new BadRequestError("At least one meal slot must be selected");  
               }
 
               const createEntity = SubscriptionMapper.toCreateEntity({
                                 ...data,
+                                userId:userId,
                                 consumedDays,
                                 remainingDays
               });
@@ -59,6 +60,7 @@ export class SubscriptionService implements ISubscriptionService{
               if(!subscription){
                   throw new InternalServerError("Failed to create subscription")
               }
+            
               const savedEntity = SubscriptionMapper.toEntity(subscription);
               if(savedEntity.endDate < new Date()){
                  savedEntity.status="expired"
@@ -70,7 +72,6 @@ export class SubscriptionService implements ISubscriptionService{
               }
               return SubscriptionMapper.toResponseDto(savedEntity);
     }
-
 
     async updateSubscription(id: string, data: UpdateSubscriptionDto,userId:string): Promise<SubscriptionResponseDto> {
                      if(!id){
@@ -186,7 +187,6 @@ export class SubscriptionService implements ISubscriptionService{
            return SubscriptionMapper.toResponseDto(entity);
     }
 
-
     async getSubscriptionsByUserId(userId: string): Promise<SubscriptionResponseDto[]> {
             if(!userId){
                   throw new BadRequestError("UserId should not be empty")
@@ -228,11 +228,17 @@ export class SubscriptionService implements ISubscriptionService{
              return SubscriptionMapper.toResponseDto(entity);
     }
 
+   async  cancelSubscription(id: string): Promise<SubscriptionResponseDto> {
+          if(!id){
+                  throw new BadRequestError("Subscription id is required")
+             }
 
-    cancelSubscription(id: string): Promise<SubscriptionResponseDto> {
-        throw new Error("Method not implemented.");
+             const subscription =  await this.repository.resumeSubscription(id);
+             if(!subscription || !subscription.id){
+                   throw new NotFoundError("Subscription not found")
+             }
+             const entity = SubscriptionMapper.toEntity(subscription);
+             return SubscriptionMapper.toResponseDto(entity);
     }
-
-
 
 }

@@ -52,7 +52,21 @@ export class SubscriptionRepository implements ISubscriptionRepository{
                
                return row
      }
-     
+
+     async getActiveById(id: string): Promise<SubscriptionRow | null> {
+  const rows = await this.db
+    .select()
+    .from(Subscription)
+    .where(
+      and(
+        eq(Subscription.id, id),
+        eq(Subscription.status, "active")
+      )
+    )
+    .limit(1);
+
+  return rows[0] || null;
+}
      async getById(id: string): Promise<SubscriptionRow | null> {
           return await this.db.select().from(Subscription)
                                        .where(eq(Subscription.id,id))
@@ -136,10 +150,29 @@ export class SubscriptionRepository implements ISubscriptionRepository{
                               .where(eq(Subscription.id, id))
                               .returning();
     if (!row) {
-      throw new InternalServerError("Failed to pause subscription");
+      throw new InternalServerError("Failed to resume subscription");
     }
     return row;
      }
+
+          
+     async cancelSubscription(id: string): Promise<SubscriptionRow> {
+          const [row] = await this.db
+                              .update(Subscription)
+                              .set({
+                                         status:"cancelled",
+                                         updated_at: new Date()
+                                   })
+                              .where(eq(Subscription.id, id))
+                              .returning();
+    if (!row) {
+      throw new InternalServerError("Failed to cancelled subscription");
+    }
+    return row;
+
+     }
+  
+
  
 
      

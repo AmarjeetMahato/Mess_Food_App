@@ -1,4 +1,9 @@
-import { z } from "zod";
+import { string, z } from "zod";
+
+
+export const createSubscriptionParamsSchema = z.object({
+      id:string({message:"Invalid params formate"})
+})
 
 // reuse enum values (keep in sync with DB)
 export const planTypeEnumSchema = z.enum(["daily", "weekly", "monthly"], {
