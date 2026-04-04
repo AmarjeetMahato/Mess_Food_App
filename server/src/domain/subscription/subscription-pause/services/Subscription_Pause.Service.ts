@@ -151,23 +151,161 @@ export class SubscriptionPauseService implements ISubscriptionPauseService{
     }
 
     
-    getPauseById(id: string): Promise<SubscriptionPauseResponseDto> {
-        throw new Error("Method not implemented.");
+   async  getPauseById(id: string): Promise<SubscriptionPauseResponseDto> {
+           if(!id){
+               throw new BadRequestError("Subscription pause id is required")
+           }
+
+           const row = await this.repository.getById(id);
+
+           if(!row || !row.id){
+               throw new NotFoundError("Subcritpion pause not found");
+           }
+
+           const entity = SubscriptionPauseMapper.toEntity(row);
+
+           return SubscriptionPauseMapper.toResponseDto(entity);
     }
-    getActivePauseBySubscriptionId(subscriptionId: string): Promise<SubscriptionPauseResponseDto | null> {
-        throw new Error("Method not implemented.");
+
+    
+    async getActivePauseBySubscriptionId(subscriptionId: string): Promise<SubscriptionPauseResponseDto | null> {
+           if(!subscriptionId){
+               throw new BadRequestError("subscriptionId is required")
+           }
+
+           const  row = await this.repository.getActivePauseBySubscriptionId(subscriptionId);
+           if(!row || !row.id){
+                 throw new NotFoundError("Active Subsription not found")
+           }
+           
+           const entity = SubscriptionPauseMapper.toEntity(row);
+           if(!entity.isActivePause){
+               throw new BadRequestError("Subscription stauts not active ")
+           }
+           return SubscriptionPauseMapper.toResponseDto(entity);
     }
-    getPausesBySubscriptionId(subscriptionId: string): Promise<SubscriptionPauseResponseDto[]> {
-        throw new Error("Method not implemented.");
+
+
+   async  getPausesBySubscriptionId(subscriptionId: string): Promise<SubscriptionPauseResponseDto[]> {
+             if(!subscriptionId){
+               throw new BadRequestError("subscriptionId is required")
+           }
+
+           const row = await this.repository.getBySubscriptionId(subscriptionId)
+           if(!row || row.length === 0){
+               throw new NotFoundError("No pauses found for this subscription")
+           }
+
+           const entity =  SubscriptionPauseMapper.toEntityArray(row);
+           return SubscriptionPauseMapper.toResponseDtoArray(entity);
+        
     }
-    getPausesByUserId(userId: string): Promise<SubscriptionPauseResponseDto[]> {
-        throw new Error("Method not implemented.");
+    
+   async getPausesByUserId(userId: string): Promise<SubscriptionPauseResponseDto[]> {
+            if(!userId){
+               throw new BadRequestError("UserId is required")
+           }
+
+           const row = await this.repository.getByUserId(userId);
+           if(!row || row.length===0){
+              throw new NotFoundError("Not Subscription found by userId")
+           }
+           
+           const entity = SubscriptionPauseMapper.toEntityArray(row);
+           return SubscriptionPauseMapper.toResponseDtoArray(entity);
+
     }
-    updatePause(id: string, data: UpdateSubscriptionPauseDto, userId: string): Promise<SubscriptionPauseResponseDto> {
-        throw new Error("Method not implemented.");
+
+   async updatePause(id: string, data: UpdateSubscriptionPauseDto, userId: string): Promise<SubscriptionPauseResponseDto> {
+                if(!id){
+                    throw new BadRequestError("Subscription pause Id is required")
+                }
+                if(!userId){
+                    throw new BadRequestError("userId is required")
+                }
+                
+                if(!data){
+                    throw  new BadRequestError("Invalid fields value")
+                }
+
+                const existingPause = await this.repository.getById(id);
+                if(!existingPause || !existingPause.id){
+                    throw new NotFoundError("Subscription pause not found")
+                }
+
+                const pauseEntity = SubscriptionPauseMapper.toEntity(existingPause);
+
+                  // ✅ 2. Fetch subscription (ownership check)
+                 const subscriptionRow = await this.SubRepository.getById(pauseEntity.subscriptionId);
+                 
+                 if(!subscriptionRow){
+                    throw new NotFoundError("Subscription not found")
+                 }
+
+                 if(subscriptionRow.user_id !== userId){
+                      throw new UnauthorizedError("Unauthorized User")
+                 }
+
+                //  Business Rule
+                // Cannot update if already resume
+                if(pauseEntity.isResumed){
+                    throw new BadRequestError("Cannot upated a resumed pause")
+                }
+
+                if(data.reason !== undefined){
+                      pauseEntity.reason = data.reason;
+                }
+
+                if(data.pauseEnd !== undefined){
+                   if(data.pauseEnd <= pauseEntity.pauseStart){
+                        throw new BadRequestError("pauseEnd must be greater than pauseStart")
+                   }
+
+                   pauseEntity.pauseEnd = data.pauseEnd;
+                }
+
+                if(data.isResumed === true){
+                    pauseEntity.resume()
+                }
+
+                const updatedRow = await this.repository.updatePause(id,{
+                   pauseEnd: pauseEntity.pauseEnd,
+                   reason : pauseEntity.reason,
+                   isResumed : pauseEntity.isResumed,
+                   resumedAt: pauseEntity.resumedAt,
+                   daysPaused: pauseEntity.daysPaused
+                })
+
+                const updatedEntity = SubscriptionPauseMapper.toEntity(updatedRow);
+                return SubscriptionPauseMapper.toResponseDto(updatedEntity);
+
     }
-    getPausesByFilters(filters: SubscriptionPauseQueryDto): Promise<SubscriptionPauseResponseDto[]> {
-        throw new Error("Method not implemented.");
+
+
+   async getPausesByFilters(filters: SubscriptionPauseQueryDto): Promise<SubscriptionPauseResponseDto[]> {
+           if(!filters){
+               throw new BadRequestError("Filters are required")
+           }
+
+           if(filters.fromDate  && filters.toDate){
+               if(filters.fromDate > filters.toDate){
+                  throw new BadRequestError("fromDate cannot be greater than toDate")
+               }
+           }
+
+           const rows = await this.repository.getByFilters({
+                       subscriptionId:filters.subscriptionId!,
+                       isResumed: filters.isResumed!,
+                       fromDate: filters.fromDate!,
+                       toDate:filters.toDate!
+                    })
+
+            if(!rows || rows.length===0){
+                   return []
+            }   
+            
+            const entities = SubscriptionPauseMapper.toEntityArray(rows);
+            return SubscriptionPauseMapper.toResponseDtoArray(entities);
     }
 
     

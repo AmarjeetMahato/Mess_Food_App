@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const createSubscriptionPauseSchemaParams = z.object({
+      id:z.string({message:"Invalid id formate"})
+})
+
 export const createSubscriptionPauseSchema = z.object({
 
   subscriptionId: z
