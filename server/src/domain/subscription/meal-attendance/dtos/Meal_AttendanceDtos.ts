@@ -1,4 +1,8 @@
-import { z } from "zod";
+import { string, z } from "zod";
+
+export const createMealAttendanceSchemaParams = z.object({
+      id: string({message:"Id should be string"})
+})
 
 export const mealSlotEnum = z.enum(["breakfast","lunch","snacks","dinner"]);
 
