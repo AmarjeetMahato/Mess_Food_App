@@ -59,7 +59,7 @@ export class MealAttendanceMapper {
     const now = new Date();
 
     return new MealAttendanceEntity(
-      crypto.randomUUID(), // generate ID
+      "", // generate ID
       dto.userId,
       dto.subscriptionId,
       dto.dailyMenuId,
@@ -70,8 +70,8 @@ export class MealAttendanceMapper {
       dto.scannedBy ?? null,
       dto.createdBy,
       dto.createdBy, // initially same
-      now,
-      now
+      new Date(0),
+      new Date(0)
     );
   }
 
@@ -94,5 +94,13 @@ export class MealAttendanceMapper {
       created_at: entity.createdAt,
       updated_at: entity.updatedAt,
     };
+  }
+
+  static toEntityArray(row:MealAttendanceRow[]): MealAttendanceEntity[]{
+               return row.map(this.toEntity)      
+  }
+
+   static toResponseDtoArray(row:MealAttendanceEntity[]): mealAttendanceResponseSchemaDto[]{
+               return row.map(this.toResponseDto)      
   }
 }

@@ -7,6 +7,8 @@ import { TOKENS } from "@/helper/user_and_auth/token";
 import type { DbOrTx } from "@/config/database/database";
 import { InternalServerError } from "@/globalError/AppError";
 import { and, asc, eq, gte, lte } from "drizzle-orm";
+import { MealAttendanceEntity } from "../entity/meal-attendance-entity";
+import { MealAttendanceMapper } from "../mapper/Meal_Attendance.Mapper";
 
 
 @injectable()
@@ -14,19 +16,11 @@ export class MealAttendanceRepository implements IMealAttendanceRepository{
     constructor(@inject(TOKENS.DB) private db:DbOrTx){}
 
 
-    async create_meal_attendence(data: createMealAttendanceSchemaDto, userId:string): Promise<MealAttendanceRow> {
-        const [row] = await this.db.insert(MealAttendance).values({
-                 user_id: data.userId,
-                 subscription_id: data.subscriptionId,
-                 daily_menu_id: data.dailyMenuId,
-                 slot: data.slot,                          // breakfast | lunch | snacks | dinner
-                 attendance_date: data.attendanceDate,     // date
-                 is_consumed: data.isConsumed ?? false,    // default false
-                 scanned_at: data.scannedAt ?? null,       // optional
-                 scanned_by: data.scannedBy ?? null,       // optional
-                 created_by: userId,               // required
-                 updated_by: userId,               // initially same
-                 }).returning();
+    async create_meal_attendence(entity: MealAttendanceEntity): Promise<MealAttendanceRow> {
+         const payload  = MealAttendanceMapper.toPersistence(entity)
+        const [row] = await this.db.insert(MealAttendance)
+                                    .values(payload)
+                                    .returning();
 
         if(!row){
             throw new InternalServerError("Failed to create Meal Attendance");  
@@ -35,12 +29,14 @@ export class MealAttendanceRepository implements IMealAttendanceRepository{
     }
 
 
-    async update_meal_attendance(data: updateMealAttendanceSchemaDto, id:string, userId:string): Promise<MealAttendanceRow> {
+    async update_meal_attendance(entity: MealAttendanceEntity, id:string): Promise<MealAttendanceRow> {
+
+                const payload =  MealAttendanceMapper.toPersistence(entity)
                 const [row] = await this.db.update(MealAttendance)
                                         .set({
-                                              ...data,
+                                              ...payload,
                                               updated_at:new Date(),
-                                              updated_by:userId
+                                              updated_by:entity.userId
                                         })
                                         .where(eq(MealAttendance.id,id))
                                         .returning()
