@@ -11,9 +11,14 @@ export const TOKENS = {
     SubscriptionController:Symbol("SubscriptionController"),
     SubscriptionService:Symbol("SubscriptionService"),
 
+    // SubscriptionPause
     SubscriptionPauseController:Symbol("SubscriptionPauseController"),
     SubscriptionPauserRepository: Symbol("SubscriptionPauserRepository"),
-    SubscriptionPauseService: Symbol("SubscriptionPauseService")
-
+    SubscriptionPauseService: Symbol("SubscriptionPauseService"),
+   
+    // MealSkip
+    MealSkipRepository:Symbol("MealSkipRepository"),
+    MealSkipService:Symbol("MealSkipService"),
+    MealSkipController: Symbol("MealSkipController")
 
 }

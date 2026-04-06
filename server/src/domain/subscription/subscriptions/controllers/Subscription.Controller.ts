@@ -2,7 +2,6 @@ import { TOKENS } from "@/helper/subscriptions/tokens";
 import {injectable, inject} from "tsyringe"
 import type { ISubscriptionService } from "../services/ISubscription.Service";
 import { NextFunction, Request,Response } from "express";
-import { createSubscriptionParamsSchema, createSubscriptionSchema, updateSubscriptionSchema } from "../dtos/subscriptionDtos";
 import { HTTPSTATUS } from "@/core/https.config";
 
 
@@ -12,22 +11,9 @@ export class SubscriptionController{
 
 
     createSubscription = async (req:Request, res:Response, next:NextFunction):Promise<void>=> {
-             const payload = createSubscriptionSchema.safeParse(req.body);
-             if(!payload.success){
-                const formattedErrors  = payload.error.issues.map((err)=>({
-                                             fields: err.path.join("."),
-                                             message: err.message
-                                        }))
-                res.status(HTTPSTATUS.BAD_REQUEST).json(
-                        {error: "Invalid request data",
-                          success: false,
-                         details: formattedErrors}
-                        )
-             }
-
              const userId = req.userId;
              try {
-                    const result = await this.service.createSubscription(payload.data!, userId!);
+                    const result = await this.service.createSubscription(req.body!, userId!);
                     res.status(HTTPSTATUS.CREATED).json({
                              message:"Subscription created successfully",
                              success:true,
@@ -40,34 +26,11 @@ export class SubscriptionController{
     }
 
     updateSubscription = async (req:Request, res:Response, next:NextFunction):Promise<void> => {
-                  const subId = createSubscriptionParamsSchema.safeParse(req.params)
-                  if(!subId.success){
-                        res.status(HTTPSTATUS.BAD_REQUEST).json(
-                        {error: "Invalid request data",
-                          success: false,
-                         details: subId.error.issues
-                        }
-                        )    
-                        return;
-                  }
-                  
-                  const payload = updateSubscriptionSchema.safeParse(req.body);
-                  if(!payload.success){
-                           const formattedErrors  = payload.error.issues.map((err)=>({
-                                             fields: err.path.join("."),
-                                             message: err.message
-                                        }))
-                res.status(HTTPSTATUS.BAD_REQUEST).json(
-                        {error: "Invalid request data",
-                          success: false,
-                         details: formattedErrors}
-                        )    
-                  }
-
+                   const {id} = req.params as {id:string};
                   const userId = req.userId;
 
                  try {
-                       const result = await this.service.updateSubscription(subId.data.id!, payload.data!, userId!)
+                       const result = await this.service.updateSubscription(id!,req.body!, userId!)
                         res.status(HTTPSTATUS.CREATED).json({
                              message:"Subscription created successfully",
                              success:true,
@@ -80,19 +43,9 @@ export class SubscriptionController{
     }
 
     getSubscriptionById = async (req:Request, res:Response, next:NextFunction):Promise<void> => {
-                           const subId = createSubscriptionParamsSchema.safeParse(req.params)
-                  if(!subId.success){
-                        res.status(HTTPSTATUS.BAD_REQUEST).json(
-                        {error: "Invalid request data",
-                          success: false,
-                         details: subId.error.issues
-                        }
-                        )    
-                        return;
-                  }
-
+                  const {id} = req.params as {id:string}
                   try {
-                          const result = await this.service.getSubscriptionById(subId.data.id);
+                          const result = await this.service.getSubscriptionById(id);
                           res.status(HTTPSTATUS.OK).json({
                              message:"Subscription fetch successfully",
                              success:true,
@@ -140,19 +93,9 @@ export class SubscriptionController{
 
     pauseSubscription = async(req:Request, res:Response, next:NextFunction) :Promise<void> => {
 
-                  const subId = createSubscriptionParamsSchema.safeParse(req.params)
-                  if(!subId.success){
-                        res.status(HTTPSTATUS.BAD_REQUEST).json(
-                        {error: "Invalid pause data",
-                          success: false,
-                         details: subId.error.issues
-                        }
-                        )    
-                        return;
-                  }
-                  
+                    const {id} = req.params as {id:string};
                   try {
-                        const result = await this.service.pauseSubscription(subId.data.id);
+                        const result = await this.service.pauseSubscription(id);
                              res.status(HTTPSTATUS.OK).json({
                                      message:"Subscription fetch successfully",
                                      success:true,
@@ -168,19 +111,9 @@ export class SubscriptionController{
 
     resumeSubscription = async(req:Request, res:Response, next:NextFunction) :Promise<void> => {
 
-                  const subId = createSubscriptionParamsSchema.safeParse(req.params)
-                  if(!subId.success){
-                        res.status(HTTPSTATUS.BAD_REQUEST).json(
-                        {error: "Invalid request data",
-                          success: false,
-                         details: subId.error.issues
-                        }
-                        )    
-                        return;
-                  }
-                  
+                  const {id} = req.params as {id:string};
                   try {
-                        const result = await this.service.resumeSubscription(subId.data.id);
+                        const result = await this.service.resumeSubscription(id);
                              res.status(HTTPSTATUS.OK).json({
                                      message:"Subscription resume successfully",
                                      success:true,
@@ -195,19 +128,9 @@ export class SubscriptionController{
 
     cancelSubscription = async(req:Request, res:Response, next:NextFunction) :Promise<void> => {
 
-                  const subId = createSubscriptionParamsSchema.safeParse(req.params)
-                  if(!subId.success){
-                        res.status(HTTPSTATUS.BAD_REQUEST).json(
-                        {error: "Invalid request data",
-                          success: false,
-                         details: subId.error.issues
-                        }
-                        )    
-                        return;
-                  }
-                  
+                  const {id} = req.params as {id:string};
                   try {
-                        const result = await this.service.cancelSubscription(subId.data.id);
+                        const result = await this.service.cancelSubscription(id);
                              res.status(HTTPSTATUS.OK).json({
                                      message:"Subscription cancel successfully",
                                      success:true,

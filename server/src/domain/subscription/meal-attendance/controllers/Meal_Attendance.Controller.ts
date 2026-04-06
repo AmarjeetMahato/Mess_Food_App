@@ -12,22 +12,10 @@ export class MealAttendanceController{
     constructor(@inject(TOKENS.MealAttendanceService) private readonly service:IMealAttendanceService){}
 
     create_mealAttendance= async(req:Request,res:Response, next:NextFunction):Promise<void> =>{
-              const payload  = createMealAttendanceSchema.safeParse(req.body);
-              if(!payload.success){
-                      const formateError = payload.error.issues.map((err)=>({
-                            fields: err.path.join("."),
-                            message: err.message
-                       }))
-                       res.status(HTTPSTATUS.BAD_REQUEST).json({
-                               error:"Invalid request data",
-                               success: false,
-                               message:formateError
-                         })
-                                         return
-              }
+           
                               const userId = req.userId;
               try {
-                    const result = await this.service.create_meal_attendence(payload.data!, userId!)
+                    const result = await this.service.create_meal_attendence(req.body, userId!)
                     res.status(HTTPSTATUS.CREATED).json({
                            message:"Meal Attendance created successfully",
                            success:true,
@@ -41,33 +29,11 @@ export class MealAttendanceController{
     }
 
     update_mealAttendance = async (req:Request, res:Response, next:NextFunction) :Promise<void> => {
-                       const mealId = createMealAttendanceSchemaParams.safeParse(req.params);
-                        if(!mealId.success){
-                               res.status(HTTPSTATUS.BAD_REQUEST).json({
-                               error:"Invalid request data",
-                               success: false,
-                               message:mealId.error.issues
-                         })
-                            return 
-                        }
-                       const payload = updateMealAttendanceSchema.safeParse(req.body);
-                       if(!payload.success){
-                            const formateError = payload.error.issues.map((err)=>({
-                            fields: err.path.join("."),
-                            message: err.message
-                       }))
-                       res.status(HTTPSTATUS.BAD_REQUEST).json({
-                               error:"Invalid request data",
-                               success: false,
-                               message:formateError
-                         })
-                            return      
-                       }
-
+               
+                       const {id}  = req.params as {id:string}
                        const userId = req.userId;
-
                        try {
-                              const result = await this.service.update_meal_attendance(payload.data!,mealId.data.id!, userId!)
+                              const result = await this.service.update_meal_attendance(req.body!,id!, userId!)
                               res.status(HTTPSTATUS.OK).json({
                                    message:"upadte meal attendance successfully",
                                    success:true,
@@ -81,18 +47,10 @@ export class MealAttendanceController{
     }
 
     fetch_meal_attendance_by_id = async (req:Request, res:Response, next:NextFunction):Promise<void> => {
-                          const mealId = createMealAttendanceSchemaParams.safeParse(req.params);
-                        if(!mealId.success){
-                               res.status(HTTPSTATUS.BAD_REQUEST).json({
-                               error:"Invalid request data",
-                               success: false,
-                               message:mealId.error.issues
-                         })
-                            return 
-                        }
-
+                          
+                       const {id}  = req.params as {id:string}
                         try {
-                           const result = await this.service.fetch_meal_attendance_by_id(mealId.data.id!)
+                           const result = await this.service.fetch_meal_attendance_by_id(id!)
                           res.status(HTTPSTATUS.CREATED).json({
                                  message:"Meal Attendance fetch successfully",
                                  success:true,

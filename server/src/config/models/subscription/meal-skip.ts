@@ -53,9 +53,10 @@ export const MealSkip = pgTable(
       .notNull(),
     // explicit flag — avoids double crediting on retry scenarios
 
-    created_at: timestamp('created_at', { mode: 'date' })
-      .defaultNow()
-      .notNull(),
+    created_at: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+
+    updated_at: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+
   },
   (table) => [
     index('skip_user_idx').on(table.user_id),
