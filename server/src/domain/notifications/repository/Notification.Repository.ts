@@ -6,7 +6,7 @@ import { Notification, NotificationRow } from "@/config/models";
 import { NotificationEntity } from "../entity/notificationeEntity";
 import { NotificationMapper } from "../mapper/Notification.Mapper";
 import { InternalServerError } from "@/globalError/AppError";
-import { and, eq } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 import { notificationChannelZodEnumDto, notificationReferenceTypeZodEnumDto, notificationStatusZodEnumDto, notificationTypeZodEnumDto } from "../dtos/NotificationDtos";
 
 
@@ -120,6 +120,7 @@ async listNotifications(options?: {userId?: string;
     .select()
     .from(Notification)
     .where(conditions.length ? and(...conditions) : undefined)
+    .orderBy(desc(Notification.created_at))
     .limit(options?.limit ?? 20)
     .offset(options?.offset ?? 0);
 
