@@ -1,5 +1,6 @@
 import { NotificationRow } from "@/config/models";
 import { NotificationEntity } from "../entity/notificationeEntity";
+import { notificationChannelZodEnumDto, notificationReferenceTypeZodEnumDto, notificationStatusZodEnumDto, notificationTypeZodEnumDto } from "../dtos/NotificationDtos";
 
 
 export interface INotificationRepository {
@@ -11,7 +12,7 @@ export interface INotificationRepository {
   // ─────────────────────────────────────────────
   // ✅ Update an existing notification
   // ─────────────────────────────────────────────
-  updateNotification(entity: NotificationEntity): Promise<NotificationRow>;
+  updateNotification(entity: NotificationEntity, id:string): Promise<NotificationRow>;
 
   // ─────────────────────────────────────────────
   // ✅ Find notification by ID
@@ -26,7 +27,7 @@ export interface INotificationRepository {
   // ─────────────────────────────────────────────
   // ✅ Find notifications by reference (delivery/subscription/wallet)
   // ─────────────────────────────────────────────
-  getByReference(referenceId: string, referenceType: string): Promise<NotificationRow[]>;
+  getByReference(referenceId: string, referenceType: notificationReferenceTypeZodEnumDto): Promise<NotificationRow[]>;
 
   // ─────────────────────────────────────────────
   // ✅ Mark a notification as read
@@ -42,12 +43,12 @@ export interface INotificationRepository {
   // ✅ List notifications with filters
   // ─────────────────────────────────────────────
   listNotifications(options?: {
-    userId?: string;
-    status?: string;
-    type?: string;
-    channel?: string;
-    isRead?: boolean;
-    limit?: number;
-    offset?: number;
+   userId?: string;
+     status?: notificationStatusZodEnumDto;
+     type?: notificationTypeZodEnumDto;
+     channel?: notificationChannelZodEnumDto;
+     isRead?: boolean;
+     limit?: number;
+     offset?: number;
   }): Promise<NotificationRow[]>;
 }
