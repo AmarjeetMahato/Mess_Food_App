@@ -97,7 +97,7 @@ export const updateNotificationSchema = z.object({
 // PARAMS SCHEMA
 // ----------------------
 export const notificationParamsSchema = z.object({
-  id: z.string({ message: 'Invalid notification id UUID' }),
+  id: z.string({ message: 'Invalid notification Id' }),
 });
 
 // ----------------------
