@@ -5,7 +5,7 @@ import { CreateNotificationInput, NotificationResponse, notificationReferenceTyp
 import { TOKENS } from "@/helper/notifications/tokens";
 import {TOKENS as AUTH_TOKENS} from "@/helper/user_and_auth/token"
 import type { INotificationRepository } from "../repository/INotification.Repository";
-import { BadRequestError, NotFoundError } from "@/globalError/AppError";
+import { BadRequestError, NotFoundError, UnauthorizedError } from "@/globalError/AppError";
 import { NotificationMapper } from "../mapper/Notification.Mapper";
 import type { IUserService } from "@/domain/auth_and_user/users/services/IUser.Service";
 import { exists } from "drizzle-orm";
@@ -44,9 +44,27 @@ export class NotificationService implements INotificationService{
 
     }
 
-    createBulkNotifications(dtos: CreateNotificationInput[]): Promise<NotificationResponse[]> {
-        throw new Error("Method not implemented.");
-    }
+async createBulkNotifications(dtos: CreateNotificationInput[]): Promise<NotificationResponse[]> {
+
+  // ─── Validation ─────────────────────────────
+  if (!dtos || dtos.length === 0) {
+    throw new BadRequestError("Input list cannot be empty");
+  }
+
+  // Optional: limit bulk size (VERY IMPORTANT in production)
+  if (dtos.length > 1000) {
+    throw new BadRequestError("Bulk limit exceeded (max 1000)");
+  }
+
+  // ─── Mapping → Entities ─────────────────────
+  const entities = dtos.map((dto) => NotificationMapper.toCreateEntity(dto));
+
+  // ─── Repository Call ────────────────────────
+  const rows = await this.repository.createBulkNotifications(entities);
+  // ─── Map → Response ─────────────────────────
+  const entityArray = NotificationMapper.toEntityArray(rows);
+  return NotificationMapper.toResponseDtoArray(entityArray);
+}
 
 
    async getNotificationById(id: string): Promise<NotificationResponse | null> {
@@ -94,13 +112,13 @@ export class NotificationService implements INotificationService{
     listNotifications(options?: { userId?: string; status?: notificationStatusZodEnumDto; type?: notificationTypeZodEnumDto; channel?: notificationChannelZodEnumDto; isRead?: boolean; limit?: number; offset?: number; }): Promise<NotificationResponse[]> {
         throw new Error("Method not implemented.");
     }
-    async updateNotification(id: string, dto: UpdateNotificationInput): Promise<NotificationResponse | null> {
+    async updateNotification(id: string,userId:string, dto: UpdateNotificationInput): Promise<NotificationResponse | null> {
                  if(!id){
                   throw new BadRequestError("Notification Id should not be empty or null");
               }
                   if(!dto){
               throw new BadRequestError("Invalid input fileds");
-          }
+                }
           
           const existing = await this.repository.getById(id);
           if(!existing || !existing.id){
@@ -109,6 +127,9 @@ export class NotificationService implements INotificationService{
 
           const entity = NotificationMapper.toEntity(existing);
             // ─── Business Logic (IMPORTANT) ─────────────
+         if(entity.user_id !== userId){
+              throw new UnauthorizedError("Unauthorized user")
+         }   
           if(dto.status){
                  entity.updateStatus(dto.status, dto.failed_reason);
           }

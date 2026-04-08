@@ -9,6 +9,8 @@ export interface INotificationRepository {
   // ─────────────────────────────────────────────
   createNotification(entity: NotificationEntity): Promise<NotificationRow>;
 
+  createBulkNotifications(entities: NotificationEntity[]): Promise<NotificationRow[]>;
+
   // ─────────────────────────────────────────────
   // ✅ Update an existing notification
   // ─────────────────────────────────────────────

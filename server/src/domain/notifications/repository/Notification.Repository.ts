@@ -14,6 +14,18 @@ import { notificationChannelZodEnumDto, notificationReferenceTypeZodEnumDto, not
 export class NotificationRepository implements INotificationRepository{
     constructor(@inject(TOKENS.DB) private db: DbOrTx){}
 
+    
+  async createBulkNotifications(entities: NotificationEntity[]): Promise<NotificationRow[]> {
+
+  if (!entities || entities.length === 0) return [];
+
+  const values = entities.map((entity) => NotificationMapper.toPersistence(entity));
+  return await this.db
+    .insert(Notification)
+    .values(values)
+    .returning();
+}
+
    async  createNotification(entity: NotificationEntity): Promise<NotificationRow> {
             const payload = NotificationMapper.toPersistence(entity);
             const [row] = await this.db.insert(Notification)

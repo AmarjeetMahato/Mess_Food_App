@@ -32,7 +32,7 @@ export interface INotificationService {
   // ─────────────────────────────────────────────
   // ✅ Update
   // ─────────────────────────────────────────────
-  updateNotification(id: string,dto: UpdateNotificationInput): Promise<NotificationResponse | null>;
+  updateNotification(id: string,userId:string, dto: UpdateNotificationInput): Promise<NotificationResponse | null>;
 
   // ─────────────────────────────────────────────
   // ✅ Delete
