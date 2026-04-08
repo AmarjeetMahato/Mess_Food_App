@@ -4,14 +4,15 @@ import type { DbOrTx } from "@/config/database/database";
 import { MenuItemRow, MenuItem } from "@/config/models";
 import { TOKENS } from "@/helper/user_and_auth/token";
 import { eq, ilike, and, sql } from "drizzle-orm";
-import { CreateMenuItemDto, ListMenuItemsDto, UpdateMenuItemDto } from "../dtos/MenuItemDtos";
+import {  ListMenuItemsDto } from "../dtos/MenuItemDtos";
 import { InternalServerError } from "@/globalError/AppError";
+import { MenuItemEntity } from "../entity/Menu.Entity";
+import { MenuItemMapper } from "../mapper/Menu_Item.Mapper";
 
 @injectable()
 export class MenuItemRepository implements IMenuItemRepository {
-      constructor(
-    @inject(TOKENS.DB) private readonly db: DbOrTx,
-  ) {}
+      
+  constructor(@inject(TOKENS.DB) private readonly db: DbOrTx,) {}
  
   // ── Find by ID ─────────────────────────────────────────────────────
   async findById(id: string): Promise<MenuItemRow | null> {
@@ -66,16 +67,11 @@ export class MenuItemRepository implements IMenuItemRepository {
   }
  
   // ── Create ─────────────────────────────────────────────────────────
-  async create(dto: CreateMenuItemDto): Promise<MenuItemRow> {
+  async create(entity: MenuItemEntity): Promise<MenuItemRow> {
+      const payload = MenuItemMapper.toPersistence(entity)
     const [row] = await this.db
       .insert(MenuItem)
-      .values({
-        name:         dto.name,
-        description:  dto.description  ?? null,
-        category:     dto.category,
-        image_url:    dto.image_url    ?? null,
-        is_available: dto.is_available ?? true,
-      })
+      .values(payload)
       .returning();
 
       if(!row){
@@ -87,23 +83,17 @@ export class MenuItemRepository implements IMenuItemRepository {
  
   // ── Update ─────────────────────────────────────────────────────────
   // Only updates fields that are explicitly provided — no accidental overwrites
-  async update(
-    id:  string,
-    dto: UpdateMenuItemDto,
-  ): Promise<MenuItemRow | null> {
-    const updateData: Partial<typeof MenuItem.$inferInsert> = {
-      updated_at: new Date(),
-    };
- 
-    if (dto.name         !== undefined) updateData.name         = dto.name;
-    if (dto.description  !== undefined) updateData.description  = dto.description;
-    if (dto.category     !== undefined) updateData.category     = dto.category;
-    if (dto.image_url    !== undefined) updateData.image_url    = dto.image_url;
-    if (dto.is_available !== undefined) updateData.is_available = dto.is_available;
+  async update(id:  string,entity: MenuItemEntity,): Promise<MenuItemRow | null> {
+         
+    const payload = MenuItemMapper.toPersistence(entity)
+
  
     const [row] = await this.db
       .update(MenuItem)
-      .set(updateData)
+      .set({
+           ...payload,
+           updated_at: new Date()
+      })
       .where(eq(MenuItem.id, id))
       .returning();
  

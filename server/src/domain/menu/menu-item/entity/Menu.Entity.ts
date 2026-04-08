@@ -7,7 +7,7 @@ export class MenuItemEntity {
     public readonly description: string | null,
     public readonly category:    'veg' | 'non_veg' | 'egg',
     public readonly imageUrl:    string | null,
-    public readonly isAvailable: boolean,
+    public readonly is_available: boolean,
     public readonly createdAt:   Date,
     public readonly updatedAt:   Date,
   ) {}
@@ -17,8 +17,8 @@ export class MenuItemEntity {
   isEgg():    boolean { return this.category === 'egg'; }
   hasImage(): boolean { return this.imageUrl !== null; }
  
-  canBeServed(): boolean {
-    return this.isAvailable;
+  isAvailable():boolean{
+      return this.is_available
   }
 }
  

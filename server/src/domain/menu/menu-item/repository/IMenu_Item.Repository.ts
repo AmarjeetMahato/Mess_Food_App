@@ -1,5 +1,6 @@
 import { MenuItemRow } from "@/config/models";
 import { CreateMenuItemDto, ListMenuItemsDto, UpdateMenuItemDto } from "../dtos/MenuItemDtos";
+import { MenuItemEntity } from "../entity/Menu.Entity";
 
 
 
@@ -8,17 +9,14 @@ export interface IMenuItemRepository {
   // ── Find ───────────────────────────────────────────────────────────
   findById(id: string): Promise<MenuItemRow | null>;
  
-  findAll(dto: ListMenuItemsDto): Promise<{
-    rows:  MenuItemRow[];
-    total: number;
-  }>;
+  findAll(dto: ListMenuItemsDto): Promise<{rows:  MenuItemRow[];total: number;}>;
   // total returned in same call — no separate COUNT query
  
   // ── Create ─────────────────────────────────────────────────────────
-  create(dto: CreateMenuItemDto): Promise<MenuItemRow>;
+  create(dto: MenuItemEntity): Promise<MenuItemRow>;
  
   // ── Update ─────────────────────────────────────────────────────────
-  update(id: string, dto: UpdateMenuItemDto): Promise<MenuItemRow | null>;
+  update(id: string, dto: MenuItemEntity): Promise<MenuItemRow | null>;
   // returns null if item not found
  
   // ── Delete ─────────────────────────────────────────────────────────

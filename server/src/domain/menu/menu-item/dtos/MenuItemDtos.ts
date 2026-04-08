@@ -12,6 +12,7 @@ export type  FoodCategory    = typeof FOOD_CATEGORIES[number];
 // ─── Request Schemas ──────────────────────────────────────────────────────────
 
 export const CreateMenuItemSchema = z.object({
+  id: z.string({message:"Invalid Id formate"}).optional(),
   name: z
     .string({ error: 'Name is required' })
     .min(2,   'Name must be at least 2 characters')
