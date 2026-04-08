@@ -94,8 +94,63 @@ export class NotificationService implements INotificationService{
     listNotifications(options?: { userId?: string; status?: notificationStatusZodEnumDto; type?: notificationTypeZodEnumDto; channel?: notificationChannelZodEnumDto; isRead?: boolean; limit?: number; offset?: number; }): Promise<NotificationResponse[]> {
         throw new Error("Method not implemented.");
     }
-    updateNotification(id: string, dto: UpdateNotificationInput): Promise<NotificationResponse | null> {
-        throw new Error("Method not implemented.");
+    async updateNotification(id: string, dto: UpdateNotificationInput): Promise<NotificationResponse | null> {
+                 if(!id){
+                  throw new BadRequestError("Notification Id should not be empty or null");
+              }
+                  if(!dto){
+              throw new BadRequestError("Invalid input fileds");
+          }
+          
+          const existing = await this.repository.getById(id);
+          if(!existing || !existing.id){
+              throw new NotFoundError("Notification not found");
+          }
+
+          const entity = NotificationMapper.toEntity(existing);
+            // ─── Business Logic (IMPORTANT) ─────────────
+          if(dto.status){
+                 entity.updateStatus(dto.status, dto.failed_reason);
+          }
+
+            // ✅ Read handling
+  if (dto.is_read === true && !entity.is_read) {
+    entity.markAsRead();
+  }
+
+  // ─── Other Field Updates ────────────────────
+  if (dto.title !== undefined) entity.title = dto.title;
+  if (dto.body !== undefined) entity.body = dto.body;
+
+    if (dto.reference_id !== undefined) {
+    entity.reference_id = dto.reference_id ?? null;
+  }
+
+  if (dto.reference_type !== undefined) {
+    entity.reference_type = dto.reference_type ?? null;
+  }
+
+  if (dto.sent_at !== undefined) {
+    entity.sent_at = dto.sent_at ?? null;
+  }
+
+  if (dto.read_at !== undefined) {
+    entity.read_at = dto.read_at ?? null;
+  }
+
+   if (dto.failed_reason !== undefined && entity.status !== 'failed') {
+    entity.failed_reason = dto.failed_reason ?? null;
+  }
+
+  // ─── Persist ───────────────────────────────
+  const updatedRow = await this.repository.updateNotification(entity, id);
+
+  // ─── Return Response ───────────────────────
+  const updatedEntity = NotificationMapper.toEntity(updatedRow);
+
+  return NotificationMapper.toResponseDto(updatedEntity);
+
+
     }
     deleteNotification(id: string): Promise<void> {
         throw new Error("Method not implemented.");
