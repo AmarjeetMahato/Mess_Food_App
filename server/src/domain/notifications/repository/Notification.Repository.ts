@@ -6,14 +6,14 @@ import { Notification, NotificationRow } from "@/config/models";
 import { NotificationEntity } from "../entity/notificationeEntity";
 import { NotificationMapper } from "../mapper/Notification.Mapper";
 import { InternalServerError } from "@/globalError/AppError";
-import { and, eq, desc } from "drizzle-orm";
+import { and, eq, desc, count } from "drizzle-orm";
 import { notificationChannelZodEnumDto, notificationReferenceTypeZodEnumDto, notificationStatusZodEnumDto, notificationTypeZodEnumDto } from "../dtos/NotificationDtos";
 
 
 @injectable()
 export class NotificationRepository implements INotificationRepository{
     constructor(@inject(TOKENS.DB) private db: DbOrTx){}
-    
+
    async  createNotification(entity: NotificationEntity): Promise<NotificationRow> {
             const payload = NotificationMapper.toPersistence(entity);
             const [row] = await this.db.insert(Notification)
@@ -44,14 +44,25 @@ export class NotificationRepository implements INotificationRepository{
             return row;                             
 
     }
+
     async getById(id: string): Promise<NotificationRow | null> {
         return this.db.select().from(Notification)
                                .where(eq(Notification.id, id))
                                .then(row=>row[0] || null)
                 
     }
-    getByUserId(userId: string, options?: { limit?: number; offset?: number; }): Promise<NotificationRow[]> {
-        throw new Error("Method not implemented.");
+
+   async getByUserId(userId: string, options?: { limit?: number; offset?: number; }): Promise<NotificationRow[]> {
+            const limit = options?.limit ?? 20;
+  const offset = options?.offset ?? 0;
+
+  return await this.db
+    .select()
+    .from(Notification)
+    .where(eq(Notification.user_id, userId))
+    .orderBy(desc(Notification.created_at)) // 🔥 latest first
+    .limit(limit)
+    .offset(offset); 
     }
 
    async getByReference(referenceId: string, referenceType: notificationReferenceTypeZodEnumDto): Promise<NotificationRow[]> {
@@ -65,6 +76,32 @@ export class NotificationRepository implements INotificationRepository{
       )
     );
     }
+
+    async  markAllAsRead(userId: string): Promise<void> {
+     await this.db
+    .update(Notification)
+    .set({
+      is_read: true,
+      read_at: new Date(),
+      status: 'read',
+    })
+    .where(eq(Notification.user_id, userId));
+  }
+
+  async getUnreadCount(userId: string): Promise<number> {
+     const result = await this.db
+    .select({ count: count() })
+    .from(Notification)
+    .where(
+      and(
+        eq(Notification.user_id, userId),
+        eq(Notification.is_read, false)
+      )
+    );
+
+  return result[0]?.count ?? 0;
+  }
+    
 
    async  markAsRead(id: string): Promise<NotificationRow | null> {
         const [row] = await this.db.update(Notification)

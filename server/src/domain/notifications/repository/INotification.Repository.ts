@@ -34,6 +34,9 @@ export interface INotificationRepository {
   // ─────────────────────────────────────────────
   markAsRead(id: string): Promise<NotificationRow | null>;
 
+  markAllAsRead(userId: string): Promise<void>
+
+  getUnreadCount(userId: string): Promise<number>
   // ─────────────────────────────────────────────
   // ✅ Delete notification (soft delete or hard delete)
   // ─────────────────────────────────────────────
