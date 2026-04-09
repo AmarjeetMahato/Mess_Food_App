@@ -69,7 +69,15 @@ export class MenuItemMapper {
 
   // ── Domain Entities → Response DTOs ────────────────────────────────
   static toResponseDtoArray(entities: MenuItemEntity[]): MenuItemResponseDto[] {
-    return entities.map(this.toResponseDto);
+         return entities.map(this.toResponseDto);
+  }
+
+    // ✅ NEW
+  static toListResponseDto(entities: MenuItemEntity[],total: number): MenuItemListResponseDto {
+    return {
+      items: entities.map(this.toResponseDto),
+      total,
+    };
   }
 
 }

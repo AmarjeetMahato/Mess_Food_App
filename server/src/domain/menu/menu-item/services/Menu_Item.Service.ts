@@ -22,16 +22,16 @@ export class MenuItemService implements IMenuItemService {
     if(!row || !row.id){
         throw new NotFoundError("Menu item not found")
     }
-
     const entity = MenuItemMapper.toDomain(row);
     return MenuItemMapper.toResponseDto(entity);
   }
 
   // ── Get all ────────────────────────────────────────────────────────
-  // async getAll(dto: ListMenuItemsDto): Promise<MenuItemListResponseDto> {
-  //   const { rows, total } = await this.repo.findAll(dto);
-  //   // return MenuItemMapper.toListResponseDto(rows, total);
-  // }
+  async getAll(dto: ListMenuItemsDto): Promise<MenuItemListResponseDto> {
+    const { rows, total } = await this.repo.findAll(dto);
+    const entities = MenuItemMapper.toEntityArray(rows);
+    return MenuItemMapper.toListResponseDto(entities, total);
+  }
 
   // ── Create ─────────────────────────────────────────────────────────
   async create(dto:CreateMenuItemDto): Promise<MenuItemResponseDto> {
@@ -41,7 +41,6 @@ export class MenuItemService implements IMenuItemService {
       const createEntity = MenuItemMapper.toCreateEntity(dto);
 
       const row = await this.repo.create(createEntity);
-
       const entity = MenuItemMapper.toDomain(row);
       return MenuItemMapper.toResponseDto(entity);
   }

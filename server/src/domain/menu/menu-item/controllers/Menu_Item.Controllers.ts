@@ -13,15 +13,12 @@ export class MenuItemController {
 
   constructor(
     @inject(TOKENS.MenuItemService) private readonly service: IMenuItemService,
-    // ✅ MenuItemService — not MenuItemController
   ) {}
 
   // GET /api/v1/menu/items
   getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const dto    = ListMenuItemsSchema.parse(req.query);
-      const result = await this.service.getAll(dto);
-       
+      const result = await this.service.getAll(req.params);
       res.status(HTTPSTATUS.OK).json({
              success:true,
              message:"Menu items fetched successfully",
@@ -33,30 +30,32 @@ export class MenuItemController {
   // GET /api/v1/menu/items/:id
   getById = async ( req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { id } = GetMenuItemSchema.parse(req.params);
+      const { id } = req.params as {id:string};
       const result = await this.service.getById(id);
-      
       res.status(HTTPSTATUS.OK).json({
             success:true,
              message:"Menu item fetched successfully",
              data:result
       })
-    } catch (error) { next(error); }
+    } catch (error) { 
+      console.log(error);
+      next(error)
+     }
   };
 
   // POST /api/v1/menu/items  (admin only)
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = ""
-      const dto    = CreateMenuItemSchema.parse(req.body);
-      const result = await this.service.create(dto,userId);
-
+      
+      const result = await this.service.create(req.body);
       res.status(201).json({
         success: true,
         data:    result,
         message: `Menu item '${result.name}' created successfully`,
       });
-    } catch (error) { next(error); }
+    } catch (error) { 
+      console.log(error);
+      next(error); }
   };
 
   // PATCH /api/v1/menu/items/:id  (admin only)
@@ -77,13 +76,15 @@ export class MenuItemController {
   // DELETE /api/v1/menu/items/:id  (admin only)
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { id } = GetMenuItemSchema.parse(req.params);
+      const { id } = req.params as {id:string};
       await this.service.delete(id);
-
       res.status(HTTPSTATUS.OK).json({
         success: true,
         message: 'Menu item removed successfully',
       });
-    } catch (error) { next(error); }
+    } catch (error) {
+      console.log(error);
+      
+      next(error); }
   };
 }

@@ -9,6 +9,10 @@ import { z } from 'zod';
 export const FOOD_CATEGORIES = ['veg', 'non_veg', 'egg'] as const;
 export type  FoodCategory    = typeof FOOD_CATEGORIES[number];
 
+export const CreateMenuItemSchemaParams = z.object({
+    id: z.string({message:"Invalid id formate"})
+})
+
 // ─── Request Schemas ──────────────────────────────────────────────────────────
 
 export const CreateMenuItemSchema = z.object({
