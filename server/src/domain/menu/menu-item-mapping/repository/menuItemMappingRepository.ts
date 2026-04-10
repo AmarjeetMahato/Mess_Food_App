@@ -5,19 +5,32 @@ import { CreateMenuItemMappingDto, UpdateMenuItemMappingDto } from "../dtos/menu
 import { TOKENS } from "@/helper/user_and_auth/token";
 import type { DbOrTx } from "@/config/database/database";
 import { InternalServerError } from "@/globalError/AppError";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { MenuItemMappingEntity } from "../entity/menuItemMappingEntity";
+import { MenuItemMappingMapper } from "../mapper/menuItemMappingMapper";
 
 @injectable()
 export class MenuItemMappingRepository implements IMenuItemMappingRepository {
    
     constructor(@inject(TOKENS.DB) private db:DbOrTx){}
 
-    async createMenuItemMapping(dto: CreateMenuItemMappingDto): Promise<MenuItemMappingRow> {
-        const [row] = await this.db.insert(MenuItemMapping).values({
-            daily_menu_id: dto.daily_menu_id,
-            menu_item_id: dto.menu_item_id,
-            quantity_description: dto.quantity_description,
-        }).returning();
+
+    async findByMenuAndItem(daily_menuId: string, menuItemId: string): Promise<MenuItemMappingRow | null> {
+        return await this.db.select().from(MenuItemMapping)
+                                     .where(
+                                         and(
+                                             eq(MenuItemMapping.daily_menu_id, daily_menuId),
+                                             eq(MenuItemMapping.menu_item_id, menuItemId)
+                                         )
+                                     )
+                                     .then(row => row[0] || null)
+    }
+
+    async createMenuItemMapping(entity: MenuItemMappingEntity): Promise<MenuItemMappingRow> {
+        const payload = MenuItemMappingMapper.toPersistence(entity);
+        const [row] = await this.db.insert(MenuItemMapping)
+                                   .values(payload)
+                                   .returning();
 
         if (!row) {
             throw new InternalServerError("Failed to create menu item mapping");
@@ -29,15 +42,14 @@ export class MenuItemMappingRepository implements IMenuItemMappingRepository {
          return await this.db.select()
                      .from(MenuItemMapping)
                      .where(eq(MenuItemMapping.id, id))
-                        .limit(1).then(rows => rows[0] ?? null);
+                     .limit(1)
+                     .then(rows => rows[0] ?? null);
     }
-    async update(id: string, dto: UpdateMenuItemMappingDto): Promise<MenuItemMappingRow | null> {
+    async update(id: string, entity: MenuItemMappingEntity): Promise<MenuItemMappingRow | null> {
+        const payload = MenuItemMappingMapper.toPersistence(entity);
         const [row] = await this.db.update(MenuItemMapping)
             .set({
-                daily_menu_id: dto.daily_menu_id,
-                menu_item_id: dto.menu_item_id,
-                quantity_description: dto.quantity_description,
-                updated_at: new Date(), // update timestamp for audit trail
+                ...payload
             })
             .where(eq(MenuItemMapping.id, id))
             .returning();

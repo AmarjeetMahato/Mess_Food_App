@@ -3,22 +3,48 @@ import { IMenuItemMappingService } from "./IMenuItemMappingService";
 import { CreateMenuItemMappingDto, MenuItemMappingResponseDto, UpdateMenuItemMappingDto } from "../dtos/menu-item-mapping";
 import { TOKENS } from "@/helper/menu/token";
 import type { IMenuItemMappingRepository } from "../repository/IMenuItemMappingRepository";
-import { MenuItemMappingEntity } from "../entity/menuItemMappingEntity";
 import { MenuItemMappingMapper } from "../mapper/menuItemMappingMapper";
-import { BadRequestError, NotFoundError } from "@/globalError/AppError";
+import { BadRequestError, ConflictError, NotFoundError } from "@/globalError/AppError";
+import type { IDailyMenuService } from "../../daily-menu/services/IDailyService";
+import type { IMenuItemService } from "../../menu-item/services/IMenu_Item.Service";
 
 
 @injectable()
 export class MenuItemMappingService implements IMenuItemMappingService{
-    constructor(@inject(TOKENS.MenuItemMappingRepository) private menuItemMappingRepository: IMenuItemMappingRepository){}
+    constructor(
+        @inject(TOKENS.MenuItemMappingRepository) private readonly menuItemMappingRepository: IMenuItemMappingRepository,
+        @inject(TOKENS.DailyMenuService) private readonly dailyMenuService: IDailyMenuService,
+        @inject(TOKENS.MenuItemService) private readonly menuItemService: IMenuItemService
+    ){}
 
     async createMenuItemMapping(dto: CreateMenuItemMappingDto): Promise<MenuItemMappingResponseDto> {
-    
-         const row = await this.menuItemMappingRepository.createMenuItemMapping(dto);
+         if(!dto){
+               throw new BadRequestError("Invalid input")
+         }
+
+          if (!dto.daily_menu_id || !dto.menu_item_id) {
+                throw new BadRequestError("daily_menu_id and menu_item_id are required");
+        }
+        
+          // ─── Check Daily Menu ─────────────────────
+        await this.dailyMenuService.getById(dto.daily_menu_id);
+
+          // ─── Check Menu Item ──────────────────────
+        await this.menuItemService.getById(dto.menu_item_id);
+
+        const existing = await this.menuItemMappingRepository.findByMenuAndItem(
+               dto.daily_menu_id, dto.menu_item_id
+        )
+
+         if (existing) {
+                     throw new ConflictError("Menu item already mapped to this daily menu");
+             }
+
+         const createEntity = MenuItemMappingMapper.toCreateEntity(dto);
+         const row = await this.menuItemMappingRepository.createMenuItemMapping(createEntity);
          if(!row?.id){
              throw new Error("Failed to create menu item mapping");
          }
-         
          const entity = MenuItemMappingMapper.toEntity(row);
          return MenuItemMappingMapper.toResponseDto(entity);
     }
@@ -41,17 +67,26 @@ export class MenuItemMappingService implements IMenuItemMappingService{
              throw new BadRequestError("ID must be provided");
          }
 
-         const existing = this.menuItemMappingRepository.findById(id);
+         const existing = await this.menuItemMappingRepository.findById(id);
          if(!existing){
              throw new NotFoundError("Menu item mapping not found");
          }
-        
-         const updatedRow = await this.menuItemMappingRepository.update(id, dto);
+
+         if(dto.daily_menu_id){
+                await this.dailyMenuService.getById(dto.daily_menu_id);
+         }
+
+         if(dto.menu_item_id){
+             await this.menuItemService.getById(dto.menu_item_id);
+         }
+         const entity = MenuItemMappingMapper.toEntity(existing);
+         MenuItemMappingMapper.applyUpdate(entity, dto);
+         const updatedRow = await this.menuItemMappingRepository.update(id, entity);
          if(!updatedRow){
              throw new Error("Failed to update menu item mapping");
          }
-         const entity = MenuItemMappingMapper.toEntity(updatedRow);
-         return MenuItemMappingMapper.toResponseDto(entity);
+         const updatedEntity = MenuItemMappingMapper.toEntity(updatedRow);
+         return MenuItemMappingMapper.toResponseDto(updatedEntity);
     }
     
     async deleteMenuItemMapping(id: string): Promise<number> {

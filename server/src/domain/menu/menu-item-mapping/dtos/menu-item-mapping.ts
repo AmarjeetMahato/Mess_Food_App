@@ -7,6 +7,7 @@ export const MenuItemMappingParamsSchemaParams = z.object({
 
 
 export const CreateMenuItemMappingSchema = z.object({
+  id: z.uuid({message:"Invalid Id"}).optional(),
   daily_menu_id: z.uuid("Invalid daily menu ID"),
 
   menu_item_id: z.uuid("Invalid menu item ID"),
@@ -44,4 +45,10 @@ export interface MenuItemMappingResponseDto {
   menu_item_id: string;
   quantity_description?: string | null;
   created_at: Date;
+  updated_at: Date;
+}
+
+export interface MenuItemMappingListResponseDto {
+  items: MenuItemMappingResponseDto[];
+  total: number;
 }
