@@ -15,5 +15,4 @@ export interface IMenuItemMappingRepository {
 
        findByMenuAndItem(daily_menuId:string, menuItemId:string) : Promise<MenuItemMappingRow | null>
 
-       findAll(): Promise<MenuItemMappingRow[]>;
-}
+findAll(limit: number,page: number): Promise<{ rows: MenuItemMappingRow[]; total: number }>;}

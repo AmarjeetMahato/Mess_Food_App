@@ -5,7 +5,7 @@ import { CreateMenuItemMappingDto, UpdateMenuItemMappingDto } from "../dtos/menu
 import { TOKENS } from "@/helper/user_and_auth/token";
 import type { DbOrTx } from "@/config/database/database";
 import { InternalServerError } from "@/globalError/AppError";
-import { and, eq } from "drizzle-orm";
+import { and, eq ,desc, count} from "drizzle-orm";
 import { MenuItemMappingEntity } from "../entity/menuItemMappingEntity";
 import { MenuItemMappingMapper } from "../mapper/menuItemMappingMapper";
 
@@ -64,7 +64,30 @@ export class MenuItemMappingRepository implements IMenuItemMappingRepository {
                        .where(eq(MenuItemMapping.id, id));
         return result ? 1 : 0; // return 1 if deleted, 0 if not found
     }
-    findAll(): Promise<MenuItemMappingRow[]> {
-        throw new Error("Method not implemented.");
-    }
+
+
+async findAll(
+  limit: number,
+  page: number
+): Promise<{ rows: MenuItemMappingRow[]; total: number }> {
+
+  const offset = (page - 1) * limit;
+
+  // ─── Fetch paginated rows ───────────────────
+  const rows = await this.db
+    .select()
+    .from(MenuItemMapping)
+    .orderBy(desc(MenuItemMapping.created_at))
+    .limit(limit)
+    .offset(offset);
+
+  // ─── Fetch total count ──────────────────────
+  const totalResult = await this.db
+    .select({ count: count() })
+    .from(MenuItemMapping);
+
+  const total = totalResult[0]?.count ?? 0;
+
+  return { rows, total };
+}
 }

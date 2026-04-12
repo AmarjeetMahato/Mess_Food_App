@@ -1,4 +1,4 @@
-import { CreateMenuItemMappingDto, MenuItemMappingResponseDto, UpdateMenuItemMappingDto } from "../dtos/menu-item-mapping";
+import { CreateMenuItemMappingDto, MenuItemMappingListResponseDto, MenuItemMappingResponseDto, UpdateMenuItemMappingDto } from "../dtos/menu-item-mapping";
 
 export interface IMenuItemMappingService {
 
@@ -10,5 +10,5 @@ export interface IMenuItemMappingService {
 
      deleteMenuItemMapping(id: string): Promise<number>;
 
-     findAllMenuItemMappings(): Promise<MenuItemMappingResponseDto[]>;
+     findAllMenuItemMappings(limit:number , page:number): Promise<MenuItemMappingListResponseDto>;
 }

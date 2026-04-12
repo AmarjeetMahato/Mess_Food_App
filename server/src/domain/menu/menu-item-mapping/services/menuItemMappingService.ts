@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { IMenuItemMappingService } from "./IMenuItemMappingService";
-import { CreateMenuItemMappingDto, MenuItemMappingResponseDto, UpdateMenuItemMappingDto } from "../dtos/menu-item-mapping";
+import { CreateMenuItemMappingDto, MenuItemMappingListResponseDto, MenuItemMappingResponseDto, UpdateMenuItemMappingDto } from "../dtos/menu-item-mapping";
 import { TOKENS } from "@/helper/menu/token";
 import type { IMenuItemMappingRepository } from "../repository/IMenuItemMappingRepository";
 import { MenuItemMappingMapper } from "../mapper/menuItemMappingMapper";
@@ -103,7 +103,9 @@ export class MenuItemMappingService implements IMenuItemMappingService{
          return deleteCount;
     }
 
-    findAllMenuItemMappings(): Promise<MenuItemMappingResponseDto[]> {
-        throw new Error("Method not implemented.");
+    async findAllMenuItemMappings(limit:number, page:number): Promise<MenuItemMappingListResponseDto> {
+         const { rows, total } = await this.menuItemMappingRepository.findAll(limit, page);
+     const entities = MenuItemMappingMapper.toEntityArray(rows);
+    return MenuItemMappingMapper.toListResponseDto(entities, total);
     }
 }
